@@ -64,6 +64,13 @@ axs.hist(be, bins, alpha=0.5, label="b")
 axs.set_title('mixture of exponential distributions: λ=0.5 vs λ=2.0')
 fig.savefig("e-histogram.png")
 
+fig, axs = plt.subplots(figsize=(10,10))
+bins=np.linspace(-5,5,41)
+axs.hist(ff[0:size-1], bins, alpha=0.5, label="a")
+axs.hist(ff[size:-1], bins, alpha=0.5, label="b")
+axs.set_title('mixture of boxcox transformed exponentials')
+fig.savefig("f-histogram.png")
+
 
 
 fig, axs = plt.subplots(figsize=(10,10)) # figure(figsize=(7,7))
