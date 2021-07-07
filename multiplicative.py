@@ -36,55 +36,41 @@ y = np.append(ay,by)
 e = np.append(ae,be)
 l = np.append(al,bl)
 
+az = ax*ay
+bz = bx*by
+
 ff, lmbd = scipy.stats.boxcox(e)
 
 data = dict(xx=x,yy=y,ee=e, zz=x*y,ff=ff,lmbd=lmbd, ll=l)
 
-fig, axs = plt.subplots(3,2, figsize=(20,20)) # figure(figsize=(7,7))
-axs[0,0].hist(x)
-axs[1,0].hist(y)
-axs[2,0].hist(e)
-axs[0,1].hist(data["zz"])
-axs[2,1].hist(data["ff"])
-#axs[2,1].hist(data["ll"])
+fig, axs = plt.subplots(2,2, figsize=(10,10))
+axs[0,0].hist(ax, alpha=0.5)
+axs[0,0].hist(bx, alpha=0.5)
+axs[1,0].hist(ay, alpha=0.5)
+axs[1,0].hist(by, alpha=0.5)
+axs[0,1].hist(az, alpha=0.5)
+axs[0,1].hist(bz, alpha=0.5)
 axs[0,0].set_title('x')
 axs[1,0].set_title('y')
-axs[2,0].set_title('e')
 axs[0,1].set_title('x*y')
-axs[2,1].set_title('ng.log(e)')
-#axs[2,1].set_title('classes')
-fig.savefig("histogram.png")
-
-fig, axs = plt.subplots(3,3, figsize=(20,20)) # figure(figsize=(7,7))
-axs[0,0].plot(ax)
-axs[1,0].plot(bx)
-axs[2,0].plot(ax)
-axs[2,0].plot(bx)
-axs[0,1].plot(ay)
-axs[1,1].plot(by)
-axs[2,1].plot(ay)
-axs[2,1].plot(by)
-axs[0,2].plot(ae)
-axs[1,2].plot(be)
-axs[2,2].plot(ae)
-axs[2,2].plot(be)
-axs[0,0].set_title('x coordinates')
-axs[0,1].set_title('y coordinates')
-fig.savefig("single-axes.png")
+fig.savefig("xy-histogram.png")
 
 
-fig, axs = plt.subplots(figsize=(20,20)) # figure(figsize=(7,7))
-axs.plot(ax,ay)
-axs.plot(bx,by)
-axs.set_title('x,y coordinates')
-fig.savefig("both-axes.png")
 
-fig, axs = plt.subplots(figsize=(20,20)) # figure(figsize=(7,7))
+fig, axs = plt.subplots(figsize=(10,10))
 bins=np.linspace(0,12,27)
 axs.hist(ae, bins, alpha=0.5, label="a")
 axs.hist(be, bins, alpha=0.5, label="b")
-axs.set_title('x,y coordinates')
-fig.savefig("both-exponential.png")
+axs.set_title('mixture of exponential distributions: λ=0.5 vs λ=2.0')
+fig.savefig("e-histogram.png")
+
+
+
+fig, axs = plt.subplots(figsize=(10,10)) # figure(figsize=(7,7))
+axs.plot(ax,ay)
+axs.plot(bx,by)
+axs.set_title('x,y predictors together')
+fig.savefig("xy-2d.png")
 
 def partsort(xs):
     ls = np.sort(xs[0:size-1])
@@ -103,19 +89,19 @@ with Model() as simple:
     trace = sample(3000, cores=1, init="adapt_diag")
     traceDF = trace_to_dataframe(trace)
     print(traceDF.describe())
-    scatter_matrix(traceDF, figsize=(8,8))
-    plt.savefig("glm_additive_binom.png")
+    scatter_matrix(traceDF, figsize=(10,10))
+    plt.savefig("xy_glm_additive_binom.png")
     traceplot(trace)
-    plt.savefig("glm_additive_traces.png")
+    plt.savefig("xy_glm_additive_traces.png")
     predict = 1 / (1 + np.exp (- (
         traceDF["Intercept"].mean()
         + traceDF["xx"].mean() * data["xx"]
         + traceDF["yy"].mean() * data["yy"]
     )))
-    pred, axs = plt.subplots(figsize=(20,20))
+    pred, axs = plt.subplots(figsize=(10,10))
     axs.plot(partsort(predict))
     axs.plot(data["ll"])
-    pred.savefig("glm_additive_prediction.png")
+    pred.savefig("xy_glm_additive_prediction.png")
 
 with Model() as simple:
     priors = { "Intercept": Normal.dist(mu=0, sigma=3)
@@ -125,18 +111,18 @@ with Model() as simple:
     trace = sample(3000, cores=1, init="adapt_diag")
     traceDF = trace_to_dataframe(trace)
     print(traceDF.describe())
-    scatter_matrix(traceDF, figsize=(8,8))
-    plt.savefig("glm_multiplicative_binom.png")
+    scatter_matrix(traceDF, figsize=(10,10))
+    plt.savefig("xy_glm_multiplicative_binom.png")
     traceplot(trace)
-    plt.savefig("glm_multiplicative_traces.png")
+    plt.savefig("xy_glm_multiplicative_traces.png")
     predict = 1 / (1 + np.exp (- (
         traceDF["Intercept"].mean()
         + traceDF["zz"].mean() * data["zz"]
     )))
-    pred, axs = plt.subplots(figsize=(20,20))
+    pred, axs = plt.subplots(figsize=(10,10))
     axs.plot(partsort(predict))
     axs.plot(data["ll"])
-    pred.savefig("glm_multiplicative_prediction.png")
+    pred.savefig("xy_glm_multiplicative_prediction.png")
 
 with Model() as simple:
     priors = { "Intercept": Normal.dist(mu=0, sigma=3)
@@ -146,18 +132,18 @@ with Model() as simple:
     trace = sample(3000, cores=1, init="adapt_diag")
     traceDF = trace_to_dataframe(trace)
     print(traceDF.describe())
-    scatter_matrix(traceDF, figsize=(8,8))
-    plt.savefig("glm_ee_binom.png")
+    scatter_matrix(traceDF, figsize=(10,10))
+    plt.savefig("e_glm_simple_binom.png")
     traceplot(trace)
-    plt.savefig("glm_ee_traces.png")
+    plt.savefig("e_glm_simple_traces.png")
     predict = 1 / (1 + np.exp (- (
         traceDF["Intercept"].mean()
         + traceDF["ee"].mean() * data["ee"]
     )))
-    pred, axs = plt.subplots(figsize=(20,20))
+    pred, axs = plt.subplots(figsize=(10,10))
     axs.plot(partsort(predict))
     axs.plot(data["ll"])
-    pred.savefig("glm_ee_prediction.png")
+    pred.savefig("e_glm_simple_prediction.png")
 
 with Model() as simple:
     priors = { "Intercept": Normal.dist(mu=0, sigma=3)
@@ -167,17 +153,17 @@ with Model() as simple:
     trace = sample(3000, cores=1, init="adapt_diag")
     traceDF = trace_to_dataframe(trace)
     print(traceDF.describe())
-    scatter_matrix(traceDF, figsize=(8,8))
-    plt.savefig("glm_ff_binom.png")
+    scatter_matrix(traceDF, figsize=(10,10))
+    plt.savefig("e_glm_boxcox_binom.png")
     traceplot(trace)
-    plt.savefig("glm_ff_traces.png")
+    plt.savefig("e_glm_boxcox_traces.png")
     predict = 1 / (1 + np.exp (- (
         traceDF["Intercept"].mean()
         + traceDF["ff"].mean() * data["ff"]
     )))
-    pred, axs = plt.subplots(figsize=(20,20))
+    pred, axs = plt.subplots(figsize=(10,10))
     axs.plot(partsort(predict))
     axs.plot(data["ll"])
-    pred.savefig("glm_ff_prediction.png")
+    pred.savefig("e_glm_boxcox_prediction.png")
     print(data["lmbd"])
 
